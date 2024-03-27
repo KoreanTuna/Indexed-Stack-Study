@@ -3,25 +3,28 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MainApp()));
+  runApp(const ProviderScope(child: HomeScreen()));
 }
 
-class MainApp extends HookConsumerWidget {
-  const MainApp({super.key});
+class HomeScreen extends HookConsumerWidget {
+  const HomeScreen({super.key});
 
+  static const List<Icon> icons = [
+    Icon(Icons.home),
+    Icon(Icons.search),
+    Icon(Icons.settings),
+  ];
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ValueNotifier<int> index = useState(0);
     final ValueNotifier<List<int>> navStack = useState([0]);
 
-    final bool Function() onPop = useCallback(
+    final void Function() onPop = useCallback(
       () {
         if (navStack.value.isNotEmpty) {
           index.value = navStack.value.last;
           navStack.value.removeLast();
-          return false;
         }
-        return true;
       },
     );
 
@@ -53,29 +56,17 @@ class MainApp extends HookConsumerWidget {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _BottomNavItem(
+                  children: List.generate(3, (itemIndex) {
+                    return BottomNavItem(
                       onPressed: () {
-                        navStack.value.add(index.value);
-                        index.value = 0;
+                        if (itemIndex != index.value) {
+                          navStack.value.add(index.value);
+                          index.value = itemIndex;
+                        }
                       },
-                      icon: const Icon(Icons.home),
-                    ),
-                    _BottomNavItem(
-                      onPressed: () {
-                        navStack.value.add(index.value);
-                        index.value = 1;
-                      },
-                      icon: const Icon(Icons.search),
-                    ),
-                    _BottomNavItem(
-                      onPressed: () {
-                        navStack.value.add(index.value);
-                        index.value = 2;
-                      },
-                      icon: const Icon(Icons.settings),
-                    ),
-                  ],
+                      icon: icons[itemIndex],
+                    );
+                  }),
                 ),
               )
             ],
@@ -102,10 +93,11 @@ class DemoScreen extends StatelessWidget {
   }
 }
 
-class _BottomNavItem extends StatelessWidget {
+class BottomNavItem extends StatelessWidget {
   final Function onPressed;
   final Icon icon;
-  const _BottomNavItem({
+  const BottomNavItem({
+    super.key,
     required this.onPressed,
     required this.icon,
   });
